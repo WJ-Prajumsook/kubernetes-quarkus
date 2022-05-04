@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: country-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: country-service
+spec:
+  namespaceSelector:
+    matchNames:
+      - default
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: country-service
+  endpoints:
+  - port: http
+    interval: 3s
+    path: /q/metrics
