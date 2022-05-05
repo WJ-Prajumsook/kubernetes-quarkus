@@ -13,7 +13,7 @@
 - [Add OpenID Connect to Quarkus service](#add-openid-connect-to-quarkus-service)
 
 # Video on Youtbe.com
-[![Part 1](https://img.youtube.com/vi/JHI97Pe8vQo/maxresdefault.jpg)](https://youtu.be/JHI97Pe8vQo)
+[![Video](https://img.youtube.com/vi/JHI97Pe8vQo/maxresdefault.jpg)](https://youtu.be/JHI97Pe8vQo)
 
 ## Environment setup
 ```java
