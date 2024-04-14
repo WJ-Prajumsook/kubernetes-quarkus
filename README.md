@@ -12,7 +12,7 @@
 - [Securing Service with Keycloak](#securing-microservice-with-keycloan-as-an-identity-provider)
 - [Add OpenID Connect to Quarkus service](#add-openid-connect-to-quarkus-service)
 
-# Video on Youtbe.com
+# Video on my channel at Youtbe.com
 [![Video](https://img.youtube.com/vi/JHI97Pe8vQo/maxresdefault.jpg)](https://youtu.be/JHI97Pe8vQo)
 
 ## Environment setup
