@@ -1,6 +1,7 @@
 # Microsercies with Kubernetes, Quarkus and Microprofile
 
 ## Table of Contents
+
 - [Environment setup](#environment-setup)
 - [Create Microservice with Quarkus](#create-microservice-with-quarkus)
 - [Running PostgreSQL in Kubernetes](#deploy-and-create-postgresql-in-kubernetes)
@@ -13,49 +14,66 @@
 - [Add OpenID Connect to Quarkus service](#add-openid-connect-to-quarkus-service)
 
 # Video on my channel at Youtbe.com
+
 [![Video](https://img.youtube.com/vi/JHI97Pe8vQo/maxresdefault.jpg)](https://youtu.be/JHI97Pe8vQo)
 
 ## Environment setup
+
 ```java
 brew install hyperkit
 ```
+
 ![img.01]
 
 ### Install Docker-CLI
+
 ```java
 brew install docker
 ```
+
 `NOTE: Do not run brew install --cask docker. This will install Docker Desktop and we will be back to where we started!`
 ![img.02]
 
 ### Install kubectl
+
 ```java
 brew install kubectl
 ```
+
 ![img.03]
+
 ### Install mikikube and set cpu and memory limit
+
 ```java
 brew install minikube
 ```
+
 ![img.04]
 
 ### Start kubernetes cluster
+
 ```java
 minikube start --driver=hyperkit --container-runtime=docker
 ```
+
 ![img.05]
+
 ### Set environment variable
+
 ```java
 minikube -p minikube docker-env | source
 ```
 
 ### Install docker-compose
+
 ```java
 brew install docker-compose
 ```
+
 ![img.06]
 
 ### Enable usefull minikube addons
+
 ```java
 minikube addons enable metrics-server
 
@@ -67,24 +85,32 @@ minikube addons enable metallb
 
 minikube addons configure metallb
 ```
+
 ![img.07]
 ![img.08]
 
 ### Install Docker credential helper
+
 ```java
 brew install docker-credential-helper
 ```
+
 ![img.09]
 
 # Create Microservice with Quarkus
-Run this maven command to creat project scaffold
+
+Run this maven command to create project scaffold
+
 ```java
 mvn io.quarkus:quarkus-maven-plugin:2.8.1.Final:create -DprojectGroupId=prajumsook -DprojectArtifactId=country-service -DclassName="org.wj.prajumsook.countries.CountryResource" -Dpath="/countries"
 ```
+
 For detail please checkout the video.
 
 # Deploy and create PostgreSQL in Kubernetes
+
 Create database instance script
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -135,64 +161,90 @@ spec:
     app: postgres
   type: NodePort
 ```
+
 Create database secret
+
 ```java
 kubectl create secret generic db-credentials --from-literal=username=quarkus_user --from-literal=password=quarkus_pass
 ```
+
 ![img.26]
 
 Start PostgreSQL instance
+
 ```java
 kubectl apply -f postgresql_db.yaml
 ```
+
 ![img.27]
 Now you should see that PostgreSQL running on port `32728` (In this tutorial but you should have a differns on your env.)
+
 ```java
 http://192.168.64.2:32728
 ```
+
 # Connect Quarkus service to PostgreSQL
+
 Add hibernate-orm and PostgreSQL extension to the project
+
 ```java
 mvn quarkus:add-extension -Dextensions="hibernate-orm,jdbc-postgresql"
 ```
+
 ![img.28]
 
 `Please check out video for complete changes in the service.`
 
 # MicroProfile OpenAPI Specification
+
 Add OpenAPI extension
+
 ```java
 mvn quarkus:add-extension -Dextensions="quarkus-smallrye-openapi"
 ```
+
 `Please watch video for complete changes.`
 
 # MicroProfile Metrics
+
 Add extension
+
 ```java
 mvn quarkus:add-extension -Dextensions="quarkus-smallrye-metrics"
 ```
+
 `Please watch video for complete implementation.`
 
 # View Metrics with Prometheus and Grafana
+
 ## Deploy, install and config Prometheus and Grafana
+
 Code using in this secstion is from:
+
 ```java
 https://github.com/prometheus-operator/kube-prometheus
-``` 
+```
+
 Please clone the latest from the repo
+
 ```java
 git clone https://github.com/prometheus-operator/kube-prometheus.git
 ```
 
 Creates the Kubernetes CRDs
+
 ```java
 kubectl create -f manifests/setup
 ```
+
 And then
+
 ```java
 kubectl create -f manifests
 ```
+
 Create servicemonitor.yaml file
+
 ```yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -215,13 +267,17 @@ spec:
 ```
 
 And to get service monitor service run command
+
 ```java
 kubectl get servicemonitors --all-namespaces
 ```
+
 Access grafana dashboard
+
 ```java
 kubectl port-forward -n monitoring service/grafana 3000:3000
 ```
+
 And on browser navigate to `http://lcalhost:3000`
 
 Login with user `admin` and pass `admin`
@@ -229,9 +285,13 @@ Login with user `admin` and pass `admin`
 `Please watch video for complete implementation`
 
 # Centralized Logging
+
 ## Setup Elasticsearch-Fluentd-Kibana (EFK) in Kubernetes
+
 ### Deploy and install Elasticsearch
+
 Create yaml file as follow
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -280,12 +340,17 @@ spec:
   - port: 9200
     targetPort: 9200
 ```
+
 Create deployment and service
+
 ```java
 kubectl create -f elasticsearch.yaml
 ```
+
 ### Deploy and install Kibana
+
 Create yaml file as follow
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -330,23 +395,32 @@ spec:
     targetPort: 5601
 
 ```
+
 You can find `MINIKUBE IP` with this command
+
 ```cmd
 minikube ip
 ```
+
 And
+
 ```cmd
 kubectl get services
 ```
+
 You should be able to find `elasticsearch port`
 
 Create deployment and service
+
 ```cmd
 kubectl create -f kibana.yaml
 ```
+
 ### Config Role-Based Access Controll for Fluentd
+
 Create Fluentd RBAC so that Fluentd can access to logs components
 yaml file as follow
+
 ```yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -386,13 +460,18 @@ subjects:
 - kind: ServiceAccount
   name: fluentd
   namespace: kube-system
-``` 
+```
+
 And run the create
+
 ```cmd
 kubectl create -f fluentd-rbac.yaml
 ```
+
 ### DaemonSet
+
 Create yaml file as follow
+
 ```yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -449,8 +528,10 @@ spec:
           path: /var/lib/docker/containers
 
 ```
+
 You need to change `MINIKUBE IP` and `ELASTICSEARCH EXPOSE PORT`
 Then create the daemonset
+
 ```cmd
 kubectl create -f fluent-daemonset.yaml
 ```
@@ -458,8 +539,11 @@ kubectl create -f fluent-daemonset.yaml
 `Please watch the video for complete implementation`
 
 # Securing Microservice with Keycloan as an Identity provider
+
 ## Config and running Keycloak in Kubernetes
+
 Create a keycloak.yaml file as follow
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -511,16 +595,21 @@ spec:
             path: /realms/master
             port: 8080
 ```
+
 Then run this command
+
 ```java
 kubectl create -f keycloak.yaml
 ```
+
 ![img.10]
 
 This will start keycloak on Kubernetes and it will also create and initial admin user with username `admin` and password `admin`
 
 ### Next create an Ingress for Keycloak
+
 keycloak-ingress.yaml
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -542,25 +631,31 @@ spec:
             port:
               number: 8080
 ```
+
 Replace `KEYCLOAK_HOST` with `keycloak.{minikube ip address}.nip.io`
 
 To find out the `minikube ip address` you can run this command
+
 ```java
 minikube ip
 ```
 
 Then run this command to create ingress for Keycloak
+
 ```java
 kubectl create -f keycloak-ingress.yaml
 ```
+
 ![img.11]
 
 Next check out minikube service list
 
 Run command
+
 ```java
 minikube service list
 ```
+
 ![img.12]
 
 You should see keycloak url, open your browser and enter keycloal url
@@ -573,6 +668,7 @@ You should see the Keycloak dashboard
 ![img.15]
 
 ## Config Keycloak as an Identity provider
+
 Create new Realm name `quarkus`
 ![img.16]
 ![img.17]
@@ -589,20 +685,23 @@ Config client
 ![img.21]
 ![img.22]
 
-Set Valid Redirect URIs to somthing like `http://localhost:99999/callback` for now. 
+Set Valid Redirect URIs to somthing like `http://localhost:99999/callback` for now.
 
 Save your settings and click on `Credentials` tab, make note of your Client name and Clent secret.
 ![img.23]
 
 Open up Postman and enter this url:
+
 ```java
 http://192.168.64.2:31803/realms/quarkus/.well-known/openid-configuration
 ```
+
 ![img.24]
 
 We are interested in `token_endpoint`, copy that and enter to new Postman request as `POST`.
 
 Enter post body as `x-www-form-urlencoded`:
+
 ```java
 client_id = quarkus-client
 client_secret = <copy from Client page>
@@ -615,13 +714,15 @@ You should get the response with `access_token`, `refresh_token` and more. This 
 ![img.25]
 
 # Add OpenID Connect to Quarkus service
+
 Add quarkus extension
+
 ```java
 mvn quarkus:add-extension -Dextensions="quarkus-oidc"
 ```
+
 `Please watch the video for complete implementation`
 
-[img.00]: country-service/assets/img-00.png
 [img.01]: country-service/assets/img-01.png
 [img.02]: country-service/assets/img-02.png
 [img.03]: country-service/assets/img-03.png
